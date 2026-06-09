@@ -111,13 +111,21 @@ def main() -> None:
     body = header + "\n\n---\n\n".join(sections)
     body += f"\n\n---\n*Reviewed {len(changed)} file(s) · Powered by Claude Opus 4.5*"
 
+    print(f"Posting review comment to PR #{os.environ['PR_NUMBER']}...")
+    sys.stdout.flush()
     post_pr_comment(body)
+    print("✅ Review comment posted. Audience can see it on the PR now.")
+    sys.stdout.flush()
 
     if has_critical:
-        print("CRITICAL issues found. Blocking PR merge.")
+        print()
+        print("=" * 55)
+        print("🚨 CRITICAL issues found — blocking merge (exit 1)")
+        print("=" * 55)
+        sys.stdout.flush()
         sys.exit(1)
 
-    print(f"Review complete. {sum(len(s) for s in sections)} chars posted.")
+    print(f"✅ Review complete. No critical issues. Merge allowed.")
 
 
 if __name__ == "__main__":
