@@ -23,7 +23,7 @@ import logging
 import threading
 
 # ❌ CRITICAL: Hardcoded production API key (demo — agent must detect this)
-STRIPE_API_KEY = "sk_live_DEMO_NEVER_HARDCODE_SECRETS_IN_CODE"
+STRIPE_API_KEY = "sk_live_DEMO_NEVER_HARDCODE_SECRETS_IN_CODE_Production"
 DATABASE_PATH = "production.db"
 
 logger = logging.getLogger(__name__)
