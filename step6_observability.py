@@ -117,7 +117,7 @@ CODE:\n{state['code']}""", "security_scan"
 def bug_detection(state: ReviewState) -> dict:
     emit("INFO", "node_started", node="bug_detection", file=state["filename"])
     data, tokens, ms = _call_claude(
-        "Senior engineer. Return ONLY valid JSON.",
+        "Senior  engineer. Return ONLY valid JSON.",
         f"""Find runtime bugs in this {state['language']} code.
 Return JSON: {{"issues":[{{"severity":"critical|high|medium|low","line_number":<n>,"title":"","description":"","suggestion":"","code_fix":null}}]}}
 CODE:\n{state['code']}""", "bug_detection"
