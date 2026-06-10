@@ -3,6 +3,7 @@ DEMO FILE: Intentionally Buggy Code
 =====================================
 This file contains real-world bugs used in the webinar demo.
 The Code Review Agent will catch these systematically.
+Adding Test
 
 Bugs planted:
   1. SQL Injection (CRITICAL - security)
