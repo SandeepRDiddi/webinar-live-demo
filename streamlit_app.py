@@ -85,9 +85,11 @@ _sample_path = os.path.join(os.path.dirname(__file__), "samples", "buggy_code.py
 DEFAULT_CODE = open(_sample_path).read() if os.path.exists(_sample_path) else "# paste code here"
 
 # ── Anthropic client ──────────────────────────────────────────────────
+from agent_prism import make_client, report_review, MODEL
+
 @st.cache_resource
 def get_client():
-    return anthropic.Anthropic()
+    return make_client()
 
 client = get_client()
 
@@ -118,7 +120,7 @@ def call_claude(system: str, user: str, log_sink=None, max_tokens: int = 4096) -
         try:
             t0 = time.time()
             r = client.messages.create(
-                model="claude-opus-4-5", max_tokens=max_tokens,
+                model=MODEL, max_tokens=max_tokens,
                 system=system, messages=[{"role": "user", "content": user}]
             )
             text = r.content[0].text.strip()
@@ -391,7 +393,7 @@ Can't tell your nurse what to do next. <strong>That's exactly what this code doe
         st.markdown("#### The code — 8 lines, ships Friday")
         st.code("""def review_code(code: str) -> str:
     response = client.messages.create(
-        model="claude-opus-4-5",
+        model=MODEL,
         max_tokens=1024,
         messages=[{
             "role": "user",
@@ -421,7 +423,7 @@ Can't tell your nurse what to do next. <strong>That's exactly what this code doe
             try:
                 t0 = time.time()
                 r = client.messages.create(
-                    model="claude-opus-4-5", max_tokens=1024,
+                    model=MODEL, max_tokens=1024,
                     messages=[{"role": "user",
                                "content": f"Review this code and find issues:\n\n{code_input}"}]
                 )
@@ -780,6 +782,7 @@ No critical code ships without human eyes. That's <strong>Human-in-the-Loop (HIT
                     st.session_state.s5_done = True
                     st.session_state.s5_state = state
                     status.update(label="✅ Pipeline complete!", state="complete")
+                    report_review(state, state.get("filename", "code.py"))
             except Exception as e:
                 status.update(label=f"❌ {e}", state="error")
                 st.error(str(e))
@@ -818,6 +821,7 @@ No critical code ships without human eyes. That's <strong>Human-in-the-Loop (HIT
             st.session_state.s5_state = state
             st.session_state.s5_hitl_needed = False
             st.session_state.s5_done = True
+            report_review(state, state.get("filename", "code.py"))
             st.rerun()
 
     # ── Final results ─────────────────────────────────────────────────
@@ -970,6 +974,7 @@ emit("WARN", "human_review_required",
                     st.session_state.s6_state = state
                     st.session_state.s6_done = True
                     status.update(label="✅ Pipeline complete!", state="complete")
+                    report_review(state, state.get("filename", "code.py"))
             except Exception as e:
                 status.update(label=f"❌ {e}", state="error")
                 st.error(str(e))
@@ -997,6 +1002,7 @@ emit("WARN", "human_review_required",
             st.session_state.s6_state = state
             st.session_state.s6_hitl_needed = False
             st.session_state.s6_done = True
+            report_review(state, state.get("filename", "code.py"))
             st.rerun()
 
     # Show logs and results
@@ -1323,7 +1329,7 @@ git push
             try:
                 t0 = time.time()
                 r = client.messages.create(
-                    model="claude-opus-4-5",
+                    model=MODEL,
                     max_tokens=2048,
                     system="Senior security engineer. Return ONLY valid JSON, no markdown.",
                     messages=[{"role": "user", "content": f"""Review this code for security vulnerabilities and bugs.

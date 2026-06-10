@@ -39,7 +39,8 @@ from pydantic import BaseModel as PydanticModel
 from dotenv import load_dotenv
 
 load_dotenv()
-client = anthropic.Anthropic()
+from agent_prism import make_client, report_review, MODEL
+client = make_client()
 
 logging.basicConfig(stream=sys.stdout, format="%(message)s", level=logging.INFO)
 log = logging.getLogger("agent")
@@ -62,7 +63,7 @@ def _call_claude(system, user, node):
     for attempt in range(1,4):
         try:
             t0=time.time()
-            r=client.messages.create(model="claude-opus-4-5",max_tokens=2048,system=system,messages=[{"role":"user","content":user}])
+            r=client.messages.create(model=MODEL,max_tokens=2048,system=system,messages=[{"role":"user","content":user}])
             text=r.content[0].text.strip()
             if text.startswith("```"): text="\n".join(text.split("\n")[1:-1])
             return json.loads(text), r.usage.input_tokens+r.usage.output_tokens, round((time.time()-t0)*1000,1)
@@ -177,6 +178,7 @@ async def _run(review_id, code, filename):
             "token_usage": result.get("token_usage",{}),
             "elapsed_ms": result.get("elapsed_ms",{}),
         })
+        report_review(result, filename)
     except Exception as e:
         reviews[review_id].update({"status":"error","error":str(e)})
 

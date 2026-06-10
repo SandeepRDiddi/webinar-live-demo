@@ -30,7 +30,8 @@ from langgraph.checkpoint.memory import MemorySaver
 from dotenv import load_dotenv
 
 load_dotenv()
-client = anthropic.Anthropic()
+from agent_prism import make_client, report_review, MODEL
+client = make_client()
 
 
 class ReviewState(TypedDict):
@@ -49,7 +50,7 @@ def _call_claude(system: str, user: str) -> tuple[dict, int]:
     for attempt in range(1, 4):
         try:
             r = client.messages.create(
-                model="claude-opus-4-5", max_tokens=2048,
+                model=MODEL, max_tokens=2048,
                 system=system, messages=[{"role": "user", "content": user}]
             )
             text = r.content[0].text.strip()
@@ -275,3 +276,5 @@ if __name__ == "__main__":
     if result.get("human_approved") is not None:
         status = "✅ Approved" if result["human_approved"] else "❌ Rejected"
         print(f"   Human review: {status}")
+
+    report_review(result, "buggy_code.py")
